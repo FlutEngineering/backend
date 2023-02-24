@@ -1,2 +1,2 @@
-# BackEnd
-API for audio to IPFS
+# FLUT Backend
+Backend for IPFS interactions
