@@ -1,0 +1,35 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  // This extension gives us `uuid_generate_v1mc()` which generates UUIDs that cluster better than `gen_random_uuid()`
+  // while still being difficult to predict and enumerate.
+  // Also, while unlikely, `gen_random_uuid()` can in theory produce collisions which can trigger spurious errors on
+  // insertion, whereas it's much less likely with `uuid_generate_v1mc()`.
+  extensions = [uuidOssp(map: "uuid-ossp")]
+}
+
+model Audio {
+  id            String   @id @default(dbgenerated("uuid_generate_v1mc()")) @db.Uuid
+  cid           String
+  title         String   @db.VarChar(30)
+  artist        User     @relation(fields: [artistAddress], references: [address])
+  artistAddress String   @db.VarChar(42)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model User {
+  address   String   @id @db.VarChar(42)
+  tracks    Audio[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Tag {
+  name String @id
+}
