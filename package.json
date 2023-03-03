@@ -6,6 +6,8 @@
   "scripts": {
     "start": "ts-node --transpile-only src/main.ts",
     "dev": "nodemon --exec ts-node src/main.ts",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy",
     "fix": "run-s fix:*",
     "fix:prettier": "prettier \"src/**/*.ts\" --write",
     "fix:lint": "eslint src --ext .ts --fix"

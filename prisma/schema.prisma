@@ -13,23 +13,42 @@ datasource db {
   extensions = [uuidOssp(map: "uuid-ossp")]
 }
 
-model Audio {
-  id            String   @id @default(dbgenerated("uuid_generate_v1mc()")) @db.Uuid
+model Track {
+  id            String         @id @default(dbgenerated("uuid_generate_v1mc()")) @db.Uuid
   cid           String
-  title         String   @db.VarChar(30)
-  artist        User     @relation(fields: [artistAddress], references: [address])
-  artistAddress String   @db.VarChar(42)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  title         String         @db.VarChar(30)
+  artist        User           @relation(fields: [artistAddress], references: [address])
+  artistAddress String         @db.VarChar(42)
+  tags          TagsOnTracks[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@unique([artistAddress, title])
+  @@map("tracks")
 }
 
 model User {
   address   String   @id @db.VarChar(42)
-  tracks    Audio[]
+  tracks    Track[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("users")
 }
 
 model Tag {
-  name String @id
+  name   String         @id @db.VarChar(20)
+  tracks TagsOnTracks[]
+
+  @@map("tags")
+}
+
+model TagsOnTracks {
+  track   Track  @relation(fields: [trackId], references: [id])
+  trackId String @db.Uuid
+  tag     Tag    @relation(fields: [tagName], references: [name])
+  tagName String @db.VarChar(20)
+
+  @@id([trackId, tagName])
+  @@map("tracks_tags")
 }
