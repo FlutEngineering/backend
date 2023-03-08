@@ -24,4 +24,4 @@ services:
       PORT: 8001
       DATABASE_URL: "postgres://postgres:postgres@postgres/flute"
     restart: unless-stopped
-    command: "yarn start"
+    command: "yarn start:docker"

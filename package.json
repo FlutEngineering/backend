@@ -10,7 +10,9 @@
     "prisma:migrate": "prisma migrate deploy",
     "fix": "run-s fix:*",
     "fix:prettier": "prettier \"src/**/*.ts\" --write",
-    "fix:lint": "eslint src --ext .ts --fix"
+    "fix:lint": "eslint src --ext .ts --fix",
+    "prestart:docker": "yarn prisma:generate && yarn prisma:migrate deploy",
+    "start:docker": "ts-node --transpile-only src/main.ts"
   },
   "author": "mrkot1359",
   "dependencies": {
