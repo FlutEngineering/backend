@@ -58,7 +58,7 @@ router.get("/", async (_req, res) => {
     })
     .then((tracks) => tracks.map(tagsToArray))
     .then((tracks) => {
-      return res.status(200).json({ tracks: tracks.map(tagsToArray) });
+      return res.status(200).json({ tracks });
     })
     .catch((e) => {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
