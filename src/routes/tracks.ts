@@ -30,7 +30,20 @@ const uploadMiddleware = upload.fields([
 
 const router = express.Router();
 
-router.use(uploadMiddleware);
+router.use((req, res, next) =>
+  uploadMiddleware(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === "LIMIT_FILE_SIZE") {
+        return res.status(413).json({ error: "File too large" });
+      } else {
+        return res.status(400).json({ error: err.message });
+      }
+    } else if (err) {
+      return res.status(400).json({ error: "Upload error" });
+    }
+    next();
+  })
+);
 
 router.get("/", async (_req, res) => {
   await prisma.track
