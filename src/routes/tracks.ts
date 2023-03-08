@@ -36,7 +36,8 @@ router.get("/", async (_req, res) => {
   await prisma.track
     .findMany({
       select: {
-        cid: true,
+        audio: true,
+        image: true,
         title: true,
         artistAddress: true,
         tags: true,
@@ -76,8 +77,9 @@ router.post("/", async (req, res) => {
     !body.address ||
     !body.title ||
     !Array.isArray(body.tags) ||
-    !((body.tags as string[]).length < 3)
+    (body.tags as string[]).length < 3
   ) {
+    console.log("👾", "body =>", body);
     return res.status(400).json({
       message: "Invalid data",
     });
@@ -119,12 +121,15 @@ router.post("/", async (req, res) => {
     mimetype: image.mimetype,
   };
 
-  const cid = await ipfs.upload(audioData, imageData);
+  const cids = await ipfs.upload(audioData, imageData);
+
+  console.log("👾", "uploaded:", cids);
 
   await prisma.track
     .create({
       data: {
-        cid,
+        audio: cids.audio,
+        image: cids.image,
         title,
         tags: {
           create: tags.map((tag) => ({
@@ -144,7 +149,8 @@ router.post("/", async (req, res) => {
         },
       },
       select: {
-        cid: true,
+        audio: true,
+        image: true,
         title: true,
         artistAddress: true,
         tags: true,

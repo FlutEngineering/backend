@@ -1,11 +1,15 @@
-import { FilebaseClient, File } from "@filebase/client";
-import { FILEBASE_API_TOKEN } from "~/config";
-// import { S3, S3Client } from "@aws-sdk/client-s3";
+import { S3 } from "@aws-sdk/client-s3";
+import { Progress, Upload } from "@aws-sdk/lib-storage";
+import { S3_API_KEY, S3_API_SECRET, S3_BUCKET_NAME } from "~/config";
 
-// const client = new S3({
-//   accessKeyId: "",
-// });
-//
+const client = new S3({
+  endpoint: "https://endpoint.4everland.co",
+  credentials: {
+    accessKeyId: S3_API_KEY,
+    secretAccessKey: S3_API_SECRET,
+  },
+  region: "us-west-2",
+});
 
 interface InputFile {
   buffer: Buffer;
@@ -13,20 +17,50 @@ interface InputFile {
   mimetype: string;
 }
 
-const client = new FilebaseClient({ token: FILEBASE_API_TOKEN });
+const uploadParamsFrom = (file: InputFile) => ({
+  Bucket: S3_BUCKET_NAME,
+  Key: file.filename,
+  Body: file.buffer,
+  ContentType: file.mimetype,
+});
 
-const fileFrom = (file: InputFile): File =>
-  new File([file.buffer], file.filename, {
-    type: file.mimetype,
+const showProgress = (e: Progress) => {
+  const progress = ((e.loaded! / e.total!) * 100) | 0;
+  console.log(e.Key, progress);
+};
+
+export async function upload(audio: InputFile, image: InputFile) {
+  const audioParams = uploadParamsFrom(audio);
+  const imageParams = uploadParamsFrom(image);
+
+  const audioUploadTask = new Upload({
+    client,
+    queueSize: 3,
+    params: audioParams,
   });
 
-export function upload(audio: InputFile, image: InputFile) {
-  return client.storeDirectory([
-    fileFrom(audio),
-    fileFrom(image),
-    // new File(
-    //   [JSON.stringify({ title: "some title" }, null, 2)],
-    //   "metadata.json"
-    // ),
-  ]);
+  const imageUploadTask = new Upload({
+    client,
+    queueSize: 3,
+    params: imageParams,
+  });
+
+  audioUploadTask.on("httpUploadProgress", showProgress);
+  imageUploadTask.on("httpUploadProgress", showProgress);
+
+  await Promise.all([audioUploadTask.done(), imageUploadTask.done()]);
+
+  const audioResult = await client.headObject(audioParams);
+  const imageResult = await client.headObject(imageParams);
+
+  if (!audioResult.Metadata || !imageResult.Metadata) {
+    throw new Error("Upload error");
+  }
+
+  const result = {
+    audio: audioResult.Metadata["ipfs-hash"],
+    image: imageResult.Metadata["ipfs-hash"],
+  };
+
+  return result;
 }

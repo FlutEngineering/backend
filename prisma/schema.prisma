@@ -15,7 +15,8 @@ datasource db {
 
 model Track {
   id            String         @id @default(dbgenerated("uuid_generate_v1mc()")) @db.Uuid
-  cid           String
+  audio         String
+  image         String
   title         String         @db.VarChar(30)
   artist        User           @relation(fields: [artistAddress], references: [address])
   artistAddress String         @db.VarChar(42)
