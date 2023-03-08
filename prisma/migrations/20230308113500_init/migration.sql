@@ -6,7 +6,7 @@ CREATE TABLE "tracks" (
     "id" UUID NOT NULL DEFAULT uuid_generate_v1mc(),
     "audio" TEXT NOT NULL,
     "image" TEXT NOT NULL,
-    "title" VARCHAR(30) NOT NULL,
+    "title" VARCHAR(100) NOT NULL,
     "artistAddress" VARCHAR(42) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
