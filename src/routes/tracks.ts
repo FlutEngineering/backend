@@ -63,10 +63,10 @@ router.get("/", async (_req, res) => {
     .catch((e) => {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         console.log(`Prisma Error ${e.code}: ${e.message}`);
-        return res.status(400).json({ message: "Track list request error" });
+        return res.status(400).json({ error: "Track list request error" });
       } else {
         console.log(e);
-        return res.status(400).json({ message: "Unknown Error" });
+        return res.status(400).json({ error: "Unknown Error" });
       }
     });
 });
@@ -79,10 +79,12 @@ router.post("/", async (req, res) => {
   // ========================================
   // TODO: generate zod schema from prisma
   if (!files?.audio?.length) {
+    console.log("👾", "files =>", files);
     return res.status(400).json({ error: "Audio is required" });
   }
 
   if (!files?.image?.length) {
+    console.log("👾", "files =>", files);
     return res.status(400).json({ error: "Image is required" });
   }
 
@@ -94,7 +96,7 @@ router.post("/", async (req, res) => {
   ) {
     console.log("👾", "body =>", body);
     return res.status(400).json({
-      message: "Invalid data",
+      error: "Invalid data",
     });
   }
 
@@ -109,13 +111,13 @@ router.post("/", async (req, res) => {
   if (!AUDIO_MIMETYPES.includes(audio.mimetype)) {
     return res
       .status(415)
-      .json({ message: `${audio.mimetype} is not supported` });
+      .json({ error: `${audio.mimetype} is not supported` });
   }
 
   if (!IMAGE_MIMETYPES.includes(image.mimetype)) {
     return res
       .status(415)
-      .json({ message: `${image.mimetype} is not supported` });
+      .json({ error: `${image.mimetype} is not supported` });
   }
   // ========================================
 
@@ -135,8 +137,6 @@ router.post("/", async (req, res) => {
   };
 
   const cids = await ipfs.upload(audioData, imageData);
-
-  console.log("👾", "uploaded:", cids);
 
   await prisma.track
     .create({
@@ -176,15 +176,15 @@ router.post("/", async (req, res) => {
     .catch((e) => {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === "P2002") {
-          return res.status(400).json({ message: "Track already exists" });
+          return res.status(400).json({ error: "Track already exists" });
         } else {
           // TODO: add logger
           console.log(`Prisma Error ${e.code}: ${e.message}`);
-          return res.status(400).json({ message: "Track submitting error" });
+          return res.status(400).json({ error: "Track submitting error" });
         }
       } else {
         console.log(e);
-        return res.status(400).json({ message: "Unknown Error" });
+        return res.status(400).json({ error: "Unknown Error" });
       }
     });
 });
