@@ -48,6 +48,36 @@ router.use((req, res, next) =>
 );
 
 router.get("/", async (_req, res) => {
+  const tagName = _req.query.tagName;
+  console.log("tagName", tagName);
+
+  if (tagName) {
+    await prisma.track
+      .findMany({
+        where: {
+          tags: {
+            some: {
+              tag: {
+                name: `${tagName}`,
+              },
+            },
+          },
+        },
+      })
+      .then((tracks) => {
+        return res.status(200).json({ tracks });
+      })
+      .catch((e) => {
+        if (e instanceof Prisma.PrismaClientKnownRequestError) {
+          console.log(`Prisma Error ${e.code}: ${e.message}`);
+          return res.status(400).json({ error: "Track list request error" });
+        } else {
+          console.log(e);
+          return res.status(400).json({ error: "Unknown Error" });
+        }
+      });
+    return;
+  }
   await prisma.track
     .findMany({
       select: {
