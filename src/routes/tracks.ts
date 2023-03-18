@@ -1,7 +1,9 @@
 import path from "node:path";
+
+import { Prisma, PrismaClient } from "@prisma/client";
 import express from "express";
 import multer from "multer";
-import { PrismaClient, Prisma } from "@prisma/client";
+
 import * as ipfs from "~/services/ipfs";
 import { tagsToArray } from "~/utils";
 
@@ -72,7 +74,9 @@ router.get("/", async (_req, res) => {
 });
 
 router.post("/", async (req, res) => {
-  const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+  const files = req.files as {
+    readonly [fieldname: string]: readonly Express.Multer.File[];
+  };
   const { body } = req;
 
   // Validation
@@ -92,7 +96,7 @@ router.post("/", async (req, res) => {
     !body.address ||
     !body.title ||
     !Array.isArray(body.tags) ||
-    (body.tags as string[]).length < 3
+    (body.tags as readonly string[]).length < 3
   ) {
     console.log("👾", "body =>", body);
     return res.status(400).json({
@@ -101,7 +105,7 @@ router.post("/", async (req, res) => {
   }
 
   const { title, address } = body;
-  const tags = (body.tags as string[]).map((tag: string) =>
+  const tags = (body.tags as readonly string[]).map((tag: string) =>
     tag.trim().toLowerCase()
   );
 
