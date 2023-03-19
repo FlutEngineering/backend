@@ -1,8 +1,7 @@
 import path from "node:path";
-
-import { Prisma, PrismaClient } from "@prisma/client";
 import express from "express";
 import multer from "multer";
+import { Prisma, PrismaClient } from "@prisma/client";
 
 import * as ipfs from "~/services/ipfs";
 import { tagsToArray } from "~/utils";
@@ -47,40 +46,21 @@ router.use((req, res, next) =>
   })
 );
 
-router.get("/", async (_req, res) => {
-  const tagName = _req.query.tagName;
-  // console.log("tagName", tagName);
+router.get("/", async (req, res) => {
+  const tag = Array.isArray(req.query.tag)
+    ? req.query.tag.at(0)
+    : req.query.tag;
 
-  if (tagName) {
-    await prisma.track
-      .findMany({
-        where: {
-          tags: {
-            some: {
-              tag: {
-                name: `${tagName}`,
-              },
-            },
-          },
-        },
-      })
-      // .then((tracks) => tracks.map(tagsToArray))
-      .then((tracks) => {
-        return res.status(200).json({ tracks });
-      })
-      .catch((e) => {
-        if (e instanceof Prisma.PrismaClientKnownRequestError) {
-          console.log(`Prisma Error ${e.code}: ${e.message}`);
-          return res.status(400).json({ error: "Track list request error" });
-        } else {
-          console.log(e);
-          return res.status(400).json({ error: "Unknown Error" });
-        }
-      });
-    return;
-  }
+  const artist = Array.isArray(req.query.artist)
+    ? req.query.artist.at(0)
+    : req.query.artist;
+
   await prisma.track
     .findMany({
+      where: {
+        tags: tag ? { some: { tag: { name: tag } } } : undefined,
+        artistAddress: artist,
+      },
       select: {
         audio: true,
         image: true,

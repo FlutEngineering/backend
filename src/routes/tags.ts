@@ -1,7 +1,5 @@
-import path from "node:path";
-
-import { Prisma, PrismaClient } from "@prisma/client";
 import express from "express";
+import { Prisma, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -12,9 +10,12 @@ router.get("/", async (_req, res) => {
     .findMany({
       select: {
         name: true,
-        tracks: true,
+        _count: { select: { tracks: true } },
       },
     })
+    .then((tags) =>
+      tags.map(({ name, _count }) => ({ name, trackCount: _count.tracks }))
+    )
     .then((tags) => {
       return res.status(200).json({ tags });
     })
