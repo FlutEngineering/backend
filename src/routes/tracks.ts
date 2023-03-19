@@ -49,7 +49,7 @@ router.use((req, res, next) =>
 
 router.get("/", async (_req, res) => {
   const tagName = _req.query.tagName;
-  console.log("tagName", tagName);
+  // console.log("tagName", tagName);
 
   if (tagName) {
     await prisma.track
@@ -64,6 +64,7 @@ router.get("/", async (_req, res) => {
           },
         },
       })
+      // .then((tracks) => tracks.map(tagsToArray))
       .then((tracks) => {
         return res.status(200).json({ tracks });
       })

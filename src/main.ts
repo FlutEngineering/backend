@@ -9,7 +9,7 @@ import audio from "~/routes/tracks";
 const app = express();
 const port = PORT;
 
-app.use(cors());
+app.use(cors({ origin: true }));
 app.use("/v1/tracks", audio);
 app.use("/v1/tags", tags);
 
