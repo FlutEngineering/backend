@@ -1,5 +1,6 @@
-import cors from "cors";
 import express from "express";
+import cors from "cors";
+import helmet from "helmet";
 import { ironSession } from "iron-session/express";
 
 import { COOKIE_PASSWORD, PORT } from "./config";
@@ -18,7 +19,8 @@ const session = ironSession({
   },
 });
 
-app.use(cors({ origin: true }));
+app.use(cors({ origin: true, credentials: true }));
+app.use(helmet());
 app.use(session);
 app.use("/v1/tracks", audio);
 app.use("/v1/tags", tags);

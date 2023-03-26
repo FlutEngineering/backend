@@ -12,6 +12,15 @@ router.get("/nonce", async (req, res) => {
   res.send(req.session.nonce);
 });
 
+router.get("/status", async (req, res) => {
+  const address = req.session.siwe?.address;
+  if (address) {
+    res.send({ ok: true, address });
+  } else {
+    res.status(401).json({ ok: false });
+  }
+});
+
 router.post("/verify", async (req, res) => {
   try {
     const { message, signature } = req.body;
