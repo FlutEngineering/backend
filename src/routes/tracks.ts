@@ -85,6 +85,15 @@ router.get("/", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
+  // Auth
+  // ========================================
+  const address = req.session.siwe?.address;
+
+  if (!address) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  // ========================================
+
   const files = req.files as {
     readonly [fieldname: string]: readonly Express.Multer.File[];
   };
@@ -104,7 +113,6 @@ router.post("/", async (req, res) => {
   }
 
   if (
-    !body.address ||
     !body.title ||
     !Array.isArray(body.tags) ||
     (body.tags as readonly string[]).length < 3
@@ -115,7 +123,7 @@ router.post("/", async (req, res) => {
     });
   }
 
-  const { title, address } = body;
+  const { title } = body;
   const tags = (body.tags as readonly string[]).map((tag: string) =>
     tag.trim().toLowerCase()
   );

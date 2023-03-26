@@ -1,5 +1,5 @@
-import { json as jsonParser } from "body-parser";
 import express from "express";
+import { json as jsonParser } from "body-parser";
 import { generateNonce, SiweMessage } from "siwe";
 
 const router = express.Router();
