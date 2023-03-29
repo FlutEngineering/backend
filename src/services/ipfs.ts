@@ -1,10 +1,16 @@
 import { S3 } from "@aws-sdk/client-s3";
 import { Progress, Upload } from "@aws-sdk/lib-storage";
 
-import { S3_API_KEY, S3_API_SECRET, S3_BUCKET_NAME } from "~/config";
+import {
+  S3_API_KEY,
+  S3_API_SECRET,
+  S3_BUCKET_NAME,
+  S3_ENDPOINT_URL,
+} from "~/config";
+import { sha256 } from "~/utils";
 
 const client = new S3({
-  endpoint: "https://endpoint.4everland.co",
+  endpoint: S3_ENDPOINT_URL,
   credentials: {
     accessKeyId: S3_API_KEY,
     secretAccessKey: S3_API_SECRET,
@@ -20,7 +26,7 @@ type InputFile = {
 
 const uploadParamsFrom = (file: InputFile) => ({
   Bucket: S3_BUCKET_NAME,
-  Key: file.filename,
+  Key: sha256(file.buffer),
   Body: file.buffer,
   ContentType: file.mimetype,
 });
