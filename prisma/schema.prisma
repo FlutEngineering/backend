@@ -33,8 +33,20 @@ model User {
   tracks    Track[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  followedBy Follows[] @relation("following")
+  following  Follows[] @relation("follower")
+  
 
   @@map("users")
+}
+
+model Follows {
+  follower    User @relation("follower", fields: [followerId], references: [address])
+  followerId  String
+  following   User @relation("following", fields: [followingId], references: [address])
+  followingId String
+
+  @@id([followerId, followingId])
 }
 
 model Tag {
