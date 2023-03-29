@@ -3,6 +3,7 @@ import express from "express";
 
 import { PORT } from "./config";
 
+import artist from "~/routes/artist";
 import tags from "~/routes/tags";
 import audio from "~/routes/tracks";
 
@@ -12,6 +13,7 @@ const port = PORT;
 app.use(cors({ origin: true }));
 app.use("/v1/tracks", audio);
 app.use("/v1/tags", tags);
+app.use("/v1/artist", artist);
 
 app.listen(port, () => {
   console.log(`[server]: Server is running at http://0.0.0.0:${port}`);

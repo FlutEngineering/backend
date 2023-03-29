@@ -1,7 +1,8 @@
 import path from "node:path";
+
+import { Prisma, PrismaClient } from "@prisma/client";
 import express from "express";
 import multer from "multer";
-import { Prisma, PrismaClient } from "@prisma/client";
 
 import * as ipfs from "~/services/ipfs";
 import { tagsToArray } from "~/utils";

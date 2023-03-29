@@ -1,5 +1,6 @@
 import { S3 } from "@aws-sdk/client-s3";
 import { Progress, Upload } from "@aws-sdk/lib-storage";
+
 import { S3_API_KEY, S3_API_SECRET, S3_BUCKET_NAME } from "~/config";
 
 const client = new S3({
@@ -11,11 +12,11 @@ const client = new S3({
   region: "us-west-2",
 });
 
-interface InputFile {
-  buffer: Buffer;
-  filename: string;
-  mimetype: string;
-}
+type InputFile = {
+  readonly buffer: Buffer;
+  readonly filename: string;
+  readonly mimetype: string;
+};
 
 const uploadParamsFrom = (file: InputFile) => ({
   Bucket: S3_BUCKET_NAME,
@@ -61,6 +62,6 @@ export async function upload(audio: InputFile, image: InputFile) {
     audio: audioResult.Metadata["ipfs-hash"],
     image: imageResult.Metadata["ipfs-hash"],
   };
-
+  console.log("result", result);
   return result;
 }
