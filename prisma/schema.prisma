@@ -29,24 +29,25 @@ model Track {
 }
 
 model User {
-  address   String   @id @db.VarChar(42)
-  tracks    Track[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  address    String    @id @db.VarChar(42)
+  tracks     Track[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
   followedBy Follows[] @relation("following")
   following  Follows[] @relation("follower")
-  
 
   @@map("users")
 }
 
 model Follows {
-  follower    User @relation("follower", fields: [followerId], references: [address])
-  followerId  String
-  following   User @relation("following", fields: [followingId], references: [address])
-  followingId String
+  follower    User     @relation("follower", fields: [followerId], references: [address])
+  followerId  String   @db.VarChar(42)
+  following   User     @relation("following", fields: [followingId], references: [address])
+  followingId String   @db.VarChar(42)
+  createdAt   DateTime @default(now())
 
   @@id([followerId, followingId])
+  @@map("follows")
 }
 
 model Tag {
