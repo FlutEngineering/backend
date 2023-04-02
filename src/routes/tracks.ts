@@ -2,6 +2,7 @@ import path from "node:path";
 import { Prisma, PrismaClient } from "@prisma/client";
 import express from "express";
 import multer from "multer";
+import * as ethers from "ethers";
 import slugify from "slugify";
 import * as ipfs from "~/services/ipfs";
 import { tagsToArray } from "~/utils";
@@ -77,6 +78,43 @@ router.get("/", async (req, res) => {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         console.log(`Prisma Error ${e.code}: ${e.message}`);
         return res.status(400).json({ error: "Track list request error" });
+      } else {
+        console.log(e);
+        return res.status(400).json({ error: "Unknown Error" });
+      }
+    });
+});
+
+router.get("/:address/:slug", async (req, res) => {
+  const { address, slug } = req.params;
+
+  if (!ethers.utils.isAddress(address)) {
+    return res.status(400).json({ error: "Invalid address" });
+  }
+
+  await prisma.track
+    .findUniqueOrThrow({
+      where: {
+        artistAddress_slug: { artistAddress: address, slug },
+      },
+      select: {
+        audio: true,
+        image: true,
+        title: true,
+        artistAddress: true,
+        tags: true,
+      },
+    })
+    .then((track) => track && tagsToArray(track))
+    .then((track) => {
+      return res.status(200).json({ track });
+    })
+    .catch((e) => {
+      if (e.code === "P2025") {
+        return res.status(404).json({ error: "Track not found" });
+      } else if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        console.log(`Prisma Error ${e.code}: ${e.message}`);
+        return res.status(400).json({ error: "Track request error" });
       } else {
         console.log(e);
         return res.status(400).json({ error: "Unknown Error" });
