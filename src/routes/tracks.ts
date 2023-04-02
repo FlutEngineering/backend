@@ -1,9 +1,8 @@
 import path from "node:path";
-
 import { Prisma, PrismaClient } from "@prisma/client";
 import express from "express";
 import multer from "multer";
-
+import slugify from "slugify";
 import * as ipfs from "~/services/ipfs";
 import { tagsToArray } from "~/utils";
 
@@ -125,6 +124,7 @@ router.post("/", async (req, res) => {
   }
 
   const { title } = body;
+  const slug = slugify(title, { lower: true, strict: true });
   const tags = (body.tags as readonly string[]).map((tag: string) =>
     tag.trim().toLowerCase()
   );
@@ -168,6 +168,7 @@ router.post("/", async (req, res) => {
         audio: cids.audio,
         image: cids.image,
         title,
+        slug,
         tags: {
           create: tags.map((tag) => ({
             tag: {
