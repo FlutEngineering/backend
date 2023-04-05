@@ -7,7 +7,6 @@ const prisma = new PrismaClient();
 const router = express.Router();
 
 router.post("/:toFollow/:followedBy", async (req, res) => {
-  console.log("found");
   const { toFollow: toFollowAddress, followedBy: followedByAddress } =
     req.params;
 
@@ -35,7 +34,38 @@ router.post("/:toFollow/:followedBy", async (req, res) => {
     })
     .then((newFollow) => {
       console.log(newFollow);
-      res.status(200).json(newFollow);
+      return res.status(200).json({ newFollow });
+    })
+    .catch((e) => {
+      console.log(e);
+      return res.status(400).json({ error: "Unknown Error" });
+    });
+});
+
+router.post("/unfollow/:toFollow/:followedBy", async (req, res) => {
+  // console.log("unfollow");
+  const { toFollow: toFollowAddress, followedBy: followedByAddress } =
+    req.params;
+
+  if (
+    !ethers.utils.isAddress(toFollowAddress) ||
+    !ethers.utils.isAddress(followedByAddress)
+  ) {
+    return res.status(400).json({ error: "Invalid address" });
+  }
+
+  await prisma.follows
+    .delete({
+      where: {
+        followerId_followingId: {
+          followerId: followedByAddress,
+          followingId: toFollowAddress,
+        },
+      },
+    })
+    .then((deletedFollow) => {
+      console.log(deletedFollow);
+      return res.status(200).json({ deletedFollow });
     })
     .catch((e) => {
       console.log(e);
