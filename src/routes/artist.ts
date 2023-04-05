@@ -1,10 +1,47 @@
 import { Prisma, PrismaClient } from "@prisma/client";
-import express from "express";
 import * as ethers from "ethers";
+import express from "express";
 
 const prisma = new PrismaClient();
 
 const router = express.Router();
+
+router.post("/:toFollow/:followedBy", async (req, res) => {
+  console.log("found");
+  const { toFollow: toFollowAddress, followedBy: followedByAddress } =
+    req.params;
+
+  if (
+    !ethers.utils.isAddress(toFollowAddress) ||
+    !ethers.utils.isAddress(followedByAddress)
+  ) {
+    return res.status(400).json({ error: "Invalid address" });
+  }
+
+  await prisma.follows
+    .create({
+      data: {
+        follower: {
+          connect: {
+            address: followedByAddress,
+          },
+        },
+        following: {
+          connect: {
+            address: toFollowAddress,
+          },
+        },
+      },
+    })
+    .then((newFollow) => {
+      console.log(newFollow);
+      res.status(200).json(newFollow);
+    })
+    .catch((e) => {
+      console.log(e);
+      return res.status(400).json({ error: "Unknown Error" });
+    });
+});
 
 router.get("/:address", async (req, res) => {
   const { address } = req.params;
