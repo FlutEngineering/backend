@@ -7,6 +7,7 @@ const prisma = new PrismaClient();
 const router = express.Router();
 
 router.post("/:toFollow/:followedBy", async (req, res) => {
+  console.log("/follow=>", req.params);
   const { toFollow: toFollowAddress, followedBy: followedByAddress } =
     req.params;
 
