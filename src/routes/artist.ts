@@ -22,8 +22,9 @@ router.post("/:toFollow/:followedBy", async (req, res) => {
     .create({
       data: {
         follower: {
-          connect: {
-            address: followedByAddress,
+          connectOrCreate: {
+            where: { address: followedByAddress },
+            create: { address: followedByAddress },
           },
         },
         following: {
