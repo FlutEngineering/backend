@@ -16,7 +16,7 @@ jobs:
           cache: 'yarn'
       - run: yarn install
       - name: Compile typescript
-      - run: yarn exec tsc --noEmit
+        run: yarn exec tsc --noEmit
 
       # - name: Telegram Failure Notification
       #   uses: appleboy/telegram-action@v0.1.1
