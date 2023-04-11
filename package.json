@@ -11,7 +11,7 @@
     "fix": "run-s fix:*",
     "fix:prettier": "prettier \"src/**/*.ts\" --write",
     "fix:lint": "eslint src --ext .ts --fix",
-    "prestart:docker": "yarn prisma:generate && yarn prisma:migrate deploy",
+    "prestart:docker": "run-s prisma:generate prisma:migrate",
     "start:docker": "ts-node --transpile-only src/main.ts"
   },
   "author": "mrkot1359",
