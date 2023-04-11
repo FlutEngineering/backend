@@ -32,8 +32,10 @@ const uploadParamsFrom = (file: InputFile) => ({
 });
 
 const showProgress = (e: Progress) => {
-  const progress = ((e.loaded! / e.total!) * 100) | 0;
-  console.log(e.Key, progress);
+  if (e.loaded && e.total) {
+    const progress = ((e.loaded / e.total) * 100) | 0;
+    console.log(e.Key, progress);
+  }
 };
 
 export async function upload(audio: InputFile, image: InputFile) {

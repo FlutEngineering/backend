@@ -6,6 +6,7 @@ const router = express.Router();
 router.use(jsonParser());
 
 router.get("/nonce", async (req, res) => {
+  // eslint-disable-next-line functional/immutable-data
   req.session.nonce = generateNonce();
   res.setHeader("Content-Type", "text/plain");
   await req.session.save();
@@ -32,6 +33,7 @@ router.post("/verify", async (req, res) => {
       return res.status(422).json({ message: "Invalid nonce." });
     }
 
+    // eslint-disable-next-line functional/immutable-data
     req.session.siwe = fields;
     await req.session.save();
     return res.json({ ok: true });
