@@ -9,8 +9,10 @@ services:
     volumes:
       - /var/www/flute-pgdata:/var/lib/postgresql/data:rw
     restart: always
+
   app:
     image: ghcr.io/flutengineering/backend:latest
+    container_name: flut-backend-latest
     ports:
       - "8001:8001"
     links:
@@ -23,3 +25,13 @@ services:
       DATABASE_URL: "postgres://postgres:postgres@postgres/flute"
     restart: unless-stopped
     command: "yarn start:docker"
+    labels:
+      - "com.centurylinklabs.watchtower.scope=flut-backend-latest"
+
+  watchtower:
+    image: containrrr/watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 30 --scope flut-backend-latest
+    labels:
+      - "com.centurylinklabs.watchtower.scope=flut-backend-latest"
