@@ -68,6 +68,7 @@ jobs:
         id: vars
         run: |
           echo "::set-output name=repo_name::$(echo ${GITHUB_REPOSITORY#*/})"
+          echo "::set-output name=tag::$(echo ghcr.io/${GITHUB_REPOSITORY,,}:latest)"
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
@@ -84,7 +85,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: ghcr.io/${{ github.repository }}:latest
+          tags: ${{ steps.vars.outputs.tag }}
 
 #       - name: Telegram Failure Notification
 #         uses: appleboy/telegram-action@v0.1.1
@@ -109,7 +110,7 @@ jobs:
         run: |
           echo "::set-output name=version::$(echo ${GITHUB_REF#refs/tags/v})"
           echo "::set-output name=repo_name::$(echo ${GITHUB_REPOSITORY#*/})"
-          echo "::set-output name=tag::$(echo ghcr.io/$GITHUB_REPOSITORY:stable,ghcr.io/$GITHUB_REPOSITORY:$GITHUB_REF_NAME)"
+          echo "::set-output name=tag::$(echo ghcr.io/${GITHUB_REPOSITORY,,}:stable,ghcr.io/${GITHUB_REPOSITORY,,}:$GITHUB_REF_NAME)"
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
