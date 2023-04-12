@@ -6,6 +6,7 @@ import * as ethers from "ethers";
 import slugify from "slugify";
 import * as ipfs from "~/services/ipfs";
 import { tagsToArray } from "~/utils";
+import isAuthorized from "~/middlewares/isAuthorized";
 
 const AUDIO_MIMETYPES = [
   "audio/aac",
@@ -124,15 +125,8 @@ router.get("/:address/:slug", async (req, res) => {
     });
 });
 
-router.post("/", async (req, res) => {
-  // Auth
-  // ========================================
-  const address = req.session.siwe?.address;
-
-  if (!address) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-  // ========================================
+router.post("/", isAuthorized, async (req, res) => {
+  const address = res.locals.address;
 
   const files = req.files as {
     readonly [fieldname: string]: readonly Express.Multer.File[];
