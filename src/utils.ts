@@ -14,8 +14,8 @@ export function tagsToArray<T>(track: T & HasTags) {
 export function followsToArrays<T>(artist: T & HasFollows) {
   return {
     ...artist,
-    following: artist.following.map(({ followerId }) => followerId),
-    followedBy: artist.followedBy.map(({ followingId }) => followingId),
+    following: artist.following.map(({ followingId }) => followingId),
+    followedBy: artist.followedBy.map(({ followerId }) => followerId),
   };
 }
 
