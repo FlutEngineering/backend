@@ -60,9 +60,9 @@ model Tag {
 }
 
 model TagsOnTracks {
-  track   Track  @relation(fields: [trackId], references: [id])
+  track   Track  @relation(fields: [trackId], references: [id], onDelete: Cascade)
   trackId String @db.Uuid
-  tag     Tag    @relation(fields: [tagName], references: [name])
+  tag     Tag    @relation(fields: [tagName], references: [name], onDelete: Cascade)
   tagName String @db.VarChar(20)
 
   @@id([trackId, tagName])

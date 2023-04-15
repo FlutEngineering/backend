@@ -203,16 +203,16 @@ router.post("/", isAuthorized, async (req, res) => {
           create: tags.map((tag) => ({
             tag: {
               connectOrCreate: {
-                create: { name: tag },
                 where: { name: tag },
+                create: { name: tag },
               },
             },
           })),
         },
         artist: {
           connectOrCreate: {
-            create: { address },
             where: { address },
+            create: { address },
           },
         },
       },
@@ -237,6 +237,111 @@ router.post("/", isAuthorized, async (req, res) => {
           console.log(`Prisma Error ${e.code}: ${e.message}`);
           return res.status(400).json({ error: "Track submitting error" });
         }
+      } else {
+        console.log(e);
+        return res.status(400).json({ error: "Unknown Error" });
+      }
+    });
+});
+
+router.put("/:address/:slug", isAddress, isAuthorized, async (req, res) => {
+  const { address, slug } = req.params;
+  const { body } = req;
+
+  if (address !== res.locals.address) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  // Validation
+  // ========================================
+  if (Array.isArray(body.tags) && (body.tags as readonly string[]).length < 3) {
+    console.log("👾", "body =>", body);
+    return res.status(400).json({
+      error: "Invalid data",
+    });
+  }
+  // ========================================
+
+  const title = body.title;
+  const newSlug = slugify(title, { lower: true, strict: true });
+  const newTags = (body.tags as readonly string[]).map((tag: string) =>
+    tag.trim().toLowerCase()
+  );
+
+  await prisma.$transaction(async () => {
+    try {
+      // Delete old tags
+      if (newTags.length) {
+        await prisma.tagsOnTracks.deleteMany({
+          where: { track: { artistAddress: address, slug } },
+        });
+      }
+
+      const updatedTrack = await prisma.track
+        .update({
+          where: {
+            artistAddress_slug: { artistAddress: address, slug },
+          },
+          data: {
+            title,
+            slug: title ? newSlug : undefined,
+            tags: newTags.length
+              ? {
+                  create: newTags.map((tag) => ({
+                    tag: {
+                      connectOrCreate: {
+                        where: { name: tag },
+                        create: { name: tag },
+                      },
+                    },
+                  })),
+                }
+              : undefined,
+          },
+          select: {
+            audio: true,
+            image: true,
+            title: true,
+            slug: true,
+            artistAddress: true,
+            tags: true,
+          },
+        })
+        .then((track) => track && tagsToArray(track));
+
+      return res.status(200).json({ ok: true, track: updatedTrack });
+    } catch (e: any) {
+      if (e.code === "P2025") {
+        return res.status(404).json({ error: "Track not found" });
+      } else if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        console.log(`Prisma Error ${e.code}: ${e.message}`);
+        return res.status(400).json({ error: "Track updating error" });
+      } else {
+        console.log(e);
+        return res.status(400).json({ error: "Unknown Error" });
+      }
+    }
+  });
+});
+
+router.delete("/:address/:slug", isAddress, isAuthorized, async (req, res) => {
+  const { address, slug } = req.params;
+
+  if (address !== res.locals.address) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  await prisma.track
+    .delete({
+      where: { artistAddress_slug: { artistAddress: address, slug } },
+    })
+    .then(() => {
+      return res.status(200).json({ ok: true });
+    })
+    .catch((e) => {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        console.log(`Prisma Error ${e.code}: ${e.message}`);
+        return res.status(400).json({ error: "Track list request error" });
       } else {
         console.log(e);
         return res.status(400).json({ error: "Unknown Error" });
