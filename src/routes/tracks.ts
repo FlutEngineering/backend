@@ -2,11 +2,11 @@ import path from "node:path";
 import { Prisma, PrismaClient } from "@prisma/client";
 import express from "express";
 import multer from "multer";
-import * as ethers from "ethers";
 import slugify from "slugify";
 import * as ipfs from "~/services/ipfs";
 import { tagsToArray } from "~/utils";
 import isAuthorized from "~/middlewares/isAuthorized";
+import isAddress from "~/middlewares/isAddress";
 
 const AUDIO_MIMETYPES = [
   "audio/aac",
@@ -87,12 +87,8 @@ router.get("/", async (req, res) => {
     });
 });
 
-router.get("/:address/:slug", async (req, res) => {
+router.get("/:address/:slug", isAddress, async (req, res) => {
   const { address, slug } = req.params;
-
-  if (!ethers.utils.isAddress(address)) {
-    return res.status(400).json({ error: "Invalid address" });
-  }
 
   await prisma.track
     .findUniqueOrThrow({

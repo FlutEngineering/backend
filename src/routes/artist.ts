@@ -1,6 +1,6 @@
 import { Prisma, PrismaClient } from "@prisma/client";
-import * as ethers from "ethers";
 import express from "express";
+import isAddress from "~/middlewares/isAddress";
 import isAuthorized from "~/middlewares/isAuthorized";
 import { followsToArrays } from "~/utils";
 
@@ -8,13 +8,9 @@ const prisma = new PrismaClient();
 
 const router = express.Router();
 
-router.get("/follow/:toFollow", isAuthorized, async (req, res) => {
+router.get("/follow/:address", isAddress, isAuthorized, async (req, res) => {
   const address = res.locals.address;
-  const { toFollow } = req.params;
-
-  if (!ethers.utils.isAddress(toFollow)) {
-    return res.status(400).json({ error: "Invalid address" });
-  }
+  const toFollow = req.params.address;
 
   await prisma.follows
     .create({
@@ -49,13 +45,9 @@ router.get("/follow/:toFollow", isAuthorized, async (req, res) => {
     });
 });
 
-router.get("/unfollow/:toUnfollow", isAuthorized, async (req, res) => {
+router.get("/unfollow/:address", isAddress, isAuthorized, async (req, res) => {
   const address = res.locals.address;
-  const { toUnfollow } = req.params;
-
-  if (!ethers.utils.isAddress(toUnfollow)) {
-    return res.status(400).json({ error: "Invalid address" });
-  }
+  const toUnfollow = req.params.address;
 
   await prisma.follows
     .delete({
@@ -83,12 +75,8 @@ router.get("/unfollow/:toUnfollow", isAuthorized, async (req, res) => {
     });
 });
 
-router.get("/:address", async (req, res) => {
+router.get("/:address", isAddress, async (req, res) => {
   const { address } = req.params;
-
-  if (!ethers.utils.isAddress(address)) {
-    return res.status(400).json({ error: "Invalid address" });
-  }
 
   await prisma.user
     .findUniqueOrThrow({
