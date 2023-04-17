@@ -34,6 +34,8 @@ router.get("/follow/:address", isAddress, isAuthorized, async (req, res) => {
     .catch((e) => {
       if (e.code === "P2025") {
         return res.status(404).json({ error: "Artist not found" });
+      } else if (e.code === "P2002") {
+        return res.status(400).json({ error: "Already following" });
       } else if (e instanceof Prisma.PrismaClientKnownRequestError) {
         console.log(`Prisma Error ${e.code}: ${e.message}`);
         return res.status(400).json({ error: "Artist follow error" });
