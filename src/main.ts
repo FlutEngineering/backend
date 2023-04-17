@@ -9,6 +9,7 @@ import artist from "~/routes/artist";
 import tags from "~/routes/tags";
 import audio from "~/routes/tracks";
 import auth from "~/routes/auth";
+import artists from "~/routes/artists";
 import "~/types";
 
 const app = express();
@@ -27,6 +28,7 @@ app.use("/v1/tracks", audio);
 app.use("/v1/tags", tags);
 app.use("/v1/artist", artist);
 app.use("/v1/auth", auth);
+app.use("/v1/artists", artists);
 
 app.listen(PORT, () => {
   console.log(`[server]: Server is running at http://0.0.0.0:${PORT}`);
