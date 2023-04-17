@@ -28,8 +28,7 @@ router.get("/follow/:address", isAddress, isAuthorized, async (req, res) => {
         },
       },
     })
-    .then((newFollow) => {
-      console.log(newFollow);
+    .then(() => {
       return res.status(200).json({ ok: true });
     })
     .catch((e) => {
@@ -58,8 +57,7 @@ router.get("/unfollow/:address", isAddress, isAuthorized, async (req, res) => {
         },
       },
     })
-    .then((deletedFollow) => {
-      console.log(deletedFollow);
+    .then(() => {
       return res.status(200).json({ ok: true });
     })
     .catch((e) => {
@@ -75,8 +73,8 @@ router.get("/unfollow/:address", isAddress, isAuthorized, async (req, res) => {
     });
 });
 
-router.get("/:address", isAddress, async (req, res) => {
-  const { address } = req.params;
+router.get("/", isAuthorized, async (_req, res) => {
+  const address = res.locals.address;
 
   await prisma.user
     .findUniqueOrThrow({

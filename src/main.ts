@@ -5,11 +5,11 @@ import { ironSession } from "iron-session/express";
 
 import { COOKIE_PASSWORD, PORT } from "./config";
 
-import artist from "~/routes/artist";
-import tags from "~/routes/tags";
-import audio from "~/routes/tracks";
 import auth from "~/routes/auth";
+import me from "~/routes/me";
 import artists from "~/routes/artists";
+import tracks from "~/routes/tracks";
+import tags from "~/routes/tags";
 import "~/types";
 
 const app = express();
@@ -24,11 +24,11 @@ const session = ironSession({
 app.use(cors({ origin: true, credentials: true }));
 app.use(helmet());
 app.use(session);
-app.use("/v1/tracks", audio);
-app.use("/v1/tags", tags);
-app.use("/v1/artist", artist);
 app.use("/v1/auth", auth);
+app.use("/v1/me", me);
 app.use("/v1/artists", artists);
+app.use("/v1/tracks", tracks);
+app.use("/v1/tags", tags);
 
 app.listen(PORT, () => {
   console.log(`[server]: Server is running at http://0.0.0.0:${PORT}`);
