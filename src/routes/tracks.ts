@@ -70,6 +70,7 @@ router.get("/", async (req, res) => {
         slug: true,
         artistAddress: true,
         tags: true,
+        createdAt: true,
       },
     })
     .then((tracks) => tracks.map(tagsToArray))
