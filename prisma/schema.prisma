@@ -24,6 +24,7 @@ model Track {
   tags          TagsOnTracks[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+  playCount     Int            @default(0)
 
   @@unique([artistAddress, title])
   @@unique([artistAddress, slug])

@@ -64,6 +64,7 @@ router.get("/", async (req, res) => {
         artistAddress: artist,
       },
       select: {
+        id: true,
         audio: true,
         image: true,
         title: true,
@@ -97,6 +98,7 @@ router.get("/:address/:slug", isAddress, async (req, res) => {
         artistAddress_slug: { artistAddress: address, slug },
       },
       select: {
+        id: true,
         audio: true,
         image: true,
         title: true,
@@ -248,7 +250,7 @@ router.post("/", isAuthorized, async (req, res) => {
 router.put("/:address/:slug", isAddress, isAuthorized, async (req, res) => {
   const { address, slug } = req.params;
   const { body } = req;
-
+  console.log("🐌", slug);
   if (address !== res.locals.address) {
     return res.status(401).json({ error: "Unauthorized" });
   }
@@ -348,6 +350,37 @@ router.delete("/:address/:slug", isAddress, isAuthorized, async (req, res) => {
         return res.status(400).json({ error: "Unknown Error" });
       }
     });
+});
+
+//UPDATE playcount
+router.get("/playcount", async (req, res) => {
+  const { id } = req.query;
+
+  console.log("👁‍🗨D", id);
+  const updatedTrack = await prisma.track
+    .update({
+      where: {
+        id: id as string,
+      },
+      data: {
+        playCount: { increment: 1 },
+      },
+      select: {
+        audio: true,
+        image: true,
+        title: true,
+        slug: true,
+        artistAddress: true,
+        tags: true,
+        playCount: true,
+      },
+    })
+    .catch((e: any) => {
+      console.log(e);
+      return res.status(400).json({ error: "Unknown Error" });
+    });
+  console.log("👁‍🗨updatedTrack", updatedTrack);
+  return res.status(200).json({ track: updatedTrack });
 });
 
 export default router;
