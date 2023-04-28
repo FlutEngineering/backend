@@ -72,6 +72,7 @@ router.get("/", async (req, res) => {
         artistAddress: true,
         tags: true,
         createdAt: true,
+        playCount: true,
       },
     })
     .then((tracks) => tracks.map(tagsToArray))
@@ -355,8 +356,6 @@ router.delete("/:address/:slug", isAddress, isAuthorized, async (req, res) => {
 //UPDATE playcount
 router.get("/playcount", async (req, res) => {
   const { id } = req.query;
-
-  console.log("👁‍🗨D", id);
   const updatedTrack = await prisma.track
     .update({
       where: {
@@ -379,7 +378,6 @@ router.get("/playcount", async (req, res) => {
       console.log(e);
       return res.status(400).json({ error: "Unknown Error" });
     });
-  console.log("👁‍🗨updatedTrack", updatedTrack);
   return res.status(200).json({ track: updatedTrack });
 });
 
