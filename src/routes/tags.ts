@@ -1,5 +1,6 @@
 import express from "express";
 import { Prisma, PrismaClient } from "@prisma/client";
+import { countRelations } from "~/utils";
 
 const prisma = new PrismaClient();
 
@@ -14,7 +15,7 @@ router.get("/", async (_req, res) => {
       },
     })
     .then((tags) =>
-      tags.map(({ name, _count }) => ({ name, trackCount: _count.tracks }))
+      tags.map((tag) => countRelations(tag, "tracks", "trackCount"))
     )
     .then((tags) => {
       return res.status(200).json({ tags });
