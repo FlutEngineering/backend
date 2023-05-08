@@ -24,7 +24,7 @@ model Track {
   tags          TagsOnTracks[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  playCount     Int            @default(0)
+  playEvents    PlayEvent[]
 
   @@unique([artistAddress, title])
   @@unique([artistAddress, slug])
@@ -32,12 +32,13 @@ model Track {
 }
 
 model User {
-  address    String    @id @db.VarChar(42)
+  address    String      @id @db.VarChar(42)
   tracks     Track[]
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  followedBy Follows[] @relation("following")
-  following  Follows[] @relation("follower")
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  followedBy Follows[]   @relation("following")
+  following  Follows[]   @relation("follower")
+  playEvents PlayEvent[]
 
   @@map("users")
 }
@@ -68,4 +69,15 @@ model TagsOnTracks {
 
   @@id([trackId, tagName])
   @@map("tracks_tags")
+}
+
+model PlayEvent {
+  user      User     @relation(fields: [userId], references: [address], onDelete: Cascade)
+  userId    String   @db.VarChar(42)
+  track     Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  trackId   String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  @@id([userId, trackId, createdAt])
+  @@map("play_events")
 }

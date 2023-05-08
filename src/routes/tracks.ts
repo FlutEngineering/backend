@@ -4,7 +4,7 @@ import express from "express";
 import multer from "multer";
 import slugify from "slugify";
 import * as ipfs from "~/services/ipfs";
-import { tagsToArray } from "~/utils";
+import { countRelations, tagsToArray } from "~/utils";
 import isAuthorized from "~/middlewares/isAuthorized";
 import isAddress from "~/middlewares/isAddress";
 
@@ -72,10 +72,13 @@ router.get("/", async (req, res) => {
         artistAddress: true,
         tags: true,
         createdAt: true,
-        playCount: true,
+        _count: { select: { playEvents: true } },
       },
     })
     .then((tracks) => tracks.map(tagsToArray))
+    .then((tracks) =>
+      tracks.map((track) => countRelations(track, "playEvents", "playCount"))
+    )
     .then((tracks) => {
       return res.status(200).json({ tracks });
     })
@@ -106,9 +109,11 @@ router.get("/:address/:slug", isAddress, async (req, res) => {
         slug: true,
         artistAddress: true,
         tags: true,
+        _count: { select: { playEvents: true } },
       },
     })
-    .then((track) => track && tagsToArray(track))
+    .then(tagsToArray)
+    .then((track) => countRelations(track, "playEvents", "playCount"))
     .then((track) => {
       return res.status(200).json({ track });
     })
@@ -309,9 +314,11 @@ router.put("/:address/:slug", isAddress, isAuthorized, async (req, res) => {
             slug: true,
             artistAddress: true,
             tags: true,
+            _count: { select: { playEvents: true } },
           },
         })
-        .then((track) => track && tagsToArray(track));
+        .then(tagsToArray)
+        .then((track) => countRelations(track, "playEvents", "playCount"));
 
       return res.status(200).json({ ok: true, track: updatedTrack });
     } catch (e: any) {
@@ -353,32 +360,47 @@ router.delete("/:address/:slug", isAddress, isAuthorized, async (req, res) => {
     });
 });
 
-//UPDATE playcount
-router.get("/playcount", async (req, res) => {
-  const { id } = req.query;
-  const updatedTrack = await prisma.track
-    .update({
-      where: {
-        id: id as string,
-      },
+// Update playcount
+router.post("/playcount/:id", isAuthorized, async (req, res) => {
+  const { id } = req.params;
+
+  await prisma.playEvent
+    .create({
       data: {
-        playCount: { increment: 1 },
+        track: { connect: { id } },
+        user: { connect: { address: res.locals.address } },
       },
       select: {
-        audio: true,
-        image: true,
-        title: true,
-        slug: true,
-        artistAddress: true,
-        tags: true,
-        playCount: true,
+        track: {
+          select: {
+            audio: true,
+            image: true,
+            title: true,
+            slug: true,
+            artistAddress: true,
+            tags: true,
+            _count: { select: { playEvents: true } },
+          },
+        },
       },
     })
+    .then((event) => event.track)
+    .then(tagsToArray)
+    .then((track) => countRelations(track, "playEvents", "playCount"))
+    .then((track) => {
+      return res.status(200).json({ ok: true, track });
+    })
     .catch((e: any) => {
-      console.log(e);
-      return res.status(400).json({ error: "Unknown Error" });
+      if (e.code === "P2025") {
+        return res.status(404).json({ error: "Track not found" });
+      } else if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        console.log(`Prisma Error ${e.code}: ${e.message}`);
+        return res.status(400).json({ error: "Playcount increasing error" });
+      } else {
+        console.log(e);
+        return res.status(400).json({ error: "Unknown Error" });
+      }
     });
-  return res.status(200).json({ track: updatedTrack });
 });
 
 export default router;
