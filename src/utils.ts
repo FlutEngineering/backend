@@ -1,34 +1,35 @@
 import { createHash } from "node:crypto";
-import type { Follows, TagsOnTracks } from "@prisma/client";
+import * as R from "ramda";
 
-type HasTags = { tags: TagsOnTracks[] };
-type HasFollows = { following: Follows[]; followedBy: Follows[] };
-
-export function tagsToArray<T>(track: T & HasTags) {
-  return {
-    ...track,
-    tags: track.tags.map((tag) => tag.tagName),
-  };
+interface RelationToCollect<N, K> {
+  collect: N;
+  by: K;
 }
 
-export function followsToArrays<T>(artist: T & HasFollows) {
-  return {
-    ...artist,
-    following: artist.following.map(({ followingId }) => followingId),
-    followedBy: artist.followedBy.map(({ followerId }) => followerId),
-  };
-}
+export const collectRelations =
+  <N extends string, K extends string>(relations: RelationToCollect<N, K>[]) =>
+  <T extends Record<N, Array<Record<K, any>>>>(track: T) =>
+    relations.reduce(
+      (acc, relation) => ({
+        ...acc,
+        [relation.collect]: R.pluck(relation.by, acc[relation.collect]),
+      }),
+      track
+    );
 
-export function countRelations<T, P extends string>(
-  { _count, ...track }: T & { _count: { [K in P]: number } },
-  relationName: P,
-  fieldName: string = relationName
-) {
-  return {
-    ...track,
-    [fieldName]: _count[relationName],
-  };
-}
+export const collectTags = collectRelations([
+  { collect: "tags", by: "tagName" },
+]);
+
+export const collectFollows = collectRelations([
+  { collect: "following", by: "followingId" },
+  { collect: "followedBy", by: "followerId" },
+]);
+
+export const countRelations =
+  <R extends string, As extends string>(relationName: R, as: As) =>
+  <T extends { _count: { [K in R]: number } }>({ _count, ...track }: T) =>
+    R.assoc(as, _count[relationName], track);
 
 export function sha256(input: string | Buffer) {
   return createHash("sha256").update(input).digest("hex");

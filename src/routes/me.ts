@@ -2,7 +2,7 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import express from "express";
 import isAddress from "~/middlewares/isAddress";
 import isAuthorized from "~/middlewares/isAuthorized";
-import { followsToArrays } from "~/utils";
+import { collectFollows } from "~/utils";
 
 const prisma = new PrismaClient();
 
@@ -87,7 +87,7 @@ router.get("/", isAuthorized, async (_req, res) => {
         following: true,
       },
     })
-    .then((artist) => followsToArrays(artist))
+    .then(collectFollows)
     .then((artist) => {
       return res.status(200).json({ artist });
     })

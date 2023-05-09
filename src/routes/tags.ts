@@ -14,9 +14,7 @@ router.get("/", async (_req, res) => {
         _count: { select: { tracks: true } },
       },
     })
-    .then((tags) =>
-      tags.map((tag) => countRelations(tag, "tracks", "trackCount"))
-    )
+    .then((tags) => tags.map(countRelations("tracks", "trackCount")))
     .then((tags) => {
       return res.status(200).json({ tags });
     })

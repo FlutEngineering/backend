@@ -4,7 +4,7 @@ import express from "express";
 import multer from "multer";
 import slugify from "slugify";
 import * as ipfs from "~/services/ipfs";
-import { countRelations, tagsToArray } from "~/utils";
+import { countRelations, collectTags } from "~/utils";
 import isAuthorized from "~/middlewares/isAuthorized";
 import isAddress from "~/middlewares/isAddress";
 
@@ -75,10 +75,8 @@ router.get("/", async (req, res) => {
         _count: { select: { playEvents: true } },
       },
     })
-    .then((tracks) => tracks.map(tagsToArray))
-    .then((tracks) =>
-      tracks.map((track) => countRelations(track, "playEvents", "playCount"))
-    )
+    .then((tracks) => tracks.map(collectTags))
+    .then((tracks) => tracks.map(countRelations("playEvents", "playCount")))
     .then((tracks) => {
       return res.status(200).json({ tracks });
     })
@@ -112,8 +110,8 @@ router.get("/:address/:slug", isAddress, async (req, res) => {
         _count: { select: { playEvents: true } },
       },
     })
-    .then(tagsToArray)
-    .then((track) => countRelations(track, "playEvents", "playCount"))
+    .then(collectTags)
+    .then(countRelations("playEvents", "playCount"))
     .then((track) => {
       return res.status(200).json({ track });
     })
@@ -233,7 +231,7 @@ router.post("/", isAuthorized, async (req, res) => {
         tags: true,
       },
     })
-    .then(tagsToArray)
+    .then(collectTags)
     .then((track) => {
       return res.status(200).json(track);
     })
@@ -317,8 +315,8 @@ router.put("/:address/:slug", isAddress, isAuthorized, async (req, res) => {
             _count: { select: { playEvents: true } },
           },
         })
-        .then(tagsToArray)
-        .then((track) => countRelations(track, "playEvents", "playCount"));
+        .then(collectTags)
+        .then(countRelations("playEvents", "playCount"));
 
       return res.status(200).json({ ok: true, track: updatedTrack });
     } catch (e: any) {
@@ -385,8 +383,8 @@ router.post("/playcount/:id", isAuthorized, async (req, res) => {
       },
     })
     .then((event) => event.track)
-    .then(tagsToArray)
-    .then((track) => countRelations(track, "playEvents", "playCount"))
+    .then(collectTags)
+    .then(countRelations("playEvents", "playCount"))
     .then((track) => {
       return res.status(200).json({ ok: true, track });
     })
