@@ -10,6 +10,7 @@ import me from "~/routes/me";
 import artists from "~/routes/artists";
 import tracks from "~/routes/tracks";
 import tags from "~/routes/tags";
+import playlists from "~/routes/playlists";
 import "~/types";
 
 const app = express();
@@ -29,6 +30,7 @@ app.use("/v1/me", me);
 app.use("/v1/artists", artists);
 app.use("/v1/tracks", tracks);
 app.use("/v1/tags", tags);
+app.use("/v1/playlists", playlists);
 
 app.listen(PORT, () => {
   console.log(`[server]: Server is running at http://0.0.0.0:${PORT}`);

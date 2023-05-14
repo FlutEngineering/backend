@@ -14,17 +14,18 @@ datasource db {
 }
 
 model Track {
-  id            String         @id @default(dbgenerated("uuid_generate_v1mc()")) @db.Uuid
+  id            String              @id @default(dbgenerated("uuid_generate_v1mc()")) @db.Uuid
   audio         String
   image         String
-  title         String         @db.VarChar(100)
+  title         String              @db.VarChar(100)
   slug          String?
-  artist        User           @relation(fields: [artistAddress], references: [address])
-  artistAddress String         @db.VarChar(42)
+  artist        User                @relation(fields: [artistAddress], references: [address])
+  artistAddress String              @db.VarChar(42)
   tags          TagsOnTracks[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
   playEvents    PlayEvent[]
+  playlists     TracksInPlaylists[]
 
   @@unique([artistAddress, title])
   @@unique([artistAddress, slug])
@@ -39,6 +40,7 @@ model User {
   followedBy Follows[]   @relation("following")
   following  Follows[]   @relation("follower")
   playEvents PlayEvent[]
+  playlists  Playlist[]
 
   @@map("users")
 }
@@ -80,4 +82,26 @@ model PlayEvent {
 
   @@id([userId, trackId, createdAt])
   @@map("play_events")
+}
+
+model Playlist {
+  id     String              @id @default(dbgenerated("uuid_generate_v1mc()")) @db.Uuid
+  title  String              @db.VarChar(30)
+  slug   String
+  user   User                @relation(fields: [userId], references: [address], onDelete: Cascade)
+  userId String              @db.VarChar(42)
+  tracks TracksInPlaylists[]
+
+  @@unique([userId, slug])
+  @@map("playlists")
+}
+
+model TracksInPlaylists {
+  track      Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  trackId    String   @db.Uuid
+  playlist   Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  playlistId String   @db.Uuid
+
+  @@id([trackId, playlistId])
+  @@map("playlists_tracks")
 }
