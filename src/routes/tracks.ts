@@ -2,6 +2,7 @@ import path from "node:path";
 import { Prisma, PrismaClient } from "@prisma/client";
 import express from "express";
 import multer from "multer";
+import { json as jsonParser } from "body-parser";
 import slugify from "slugify";
 import * as ipfs from "~/services/ipfs";
 import { countRelations, collectTags } from "~/utils";
@@ -47,6 +48,8 @@ router.use((req, res, next) =>
     next();
   })
 );
+
+router.use(jsonParser());
 
 router.get("/", async (req, res) => {
   const tag = Array.isArray(req.query.tag)
@@ -270,7 +273,7 @@ router.put("/:address/:slug", isAddress, isAuthorized, async (req, res) => {
   // ========================================
 
   const title = body.title;
-  const newSlug = slugify(title, { lower: true, strict: true });
+  const newSlug = body.title && slugify(title, { lower: true, strict: true });
   const newTags = (body.tags as readonly string[]).map((tag: string) =>
     tag.trim().toLowerCase()
   );
@@ -291,7 +294,7 @@ router.put("/:address/:slug", isAddress, isAuthorized, async (req, res) => {
           },
           data: {
             title,
-            slug: title ? newSlug : undefined,
+            slug: newSlug,
             tags: newTags.length
               ? {
                   create: newTags.map((tag) => ({
