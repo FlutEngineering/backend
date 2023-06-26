@@ -51,7 +51,7 @@ router.use((req, res, next) =>
 
 router.use(jsonParser());
 
-router.get("/", async (req, res) => {
+router.get("/", isAuthorized, async (req, res) => {
   const tag = Array.isArray(req.query.tag)
     ? req.query.tag.at(0)
     : req.query.tag;
@@ -60,6 +60,8 @@ router.get("/", async (req, res) => {
     ? req.query.artist.at(0)
     : req.query.artist;
 
+  const userId = res.locals.userId;
+  
   await prisma.track
     .findMany({
       where: {
@@ -76,10 +78,15 @@ router.get("/", async (req, res) => {
         tags: true,
         createdAt: true,
         _count: { select: { playEvents: true } },
+        likes: {
+          select: { userId: true },
+          where: { userId },
+        },
       },
     })
     .then((tracks) => tracks.map(collectTags))
     .then((tracks) => tracks.map(countRelations("playEvents", "playCount")))
+    .then((tracks) => tracks.map((track) => ({ ...track, liked: track.likes.length > 0 })))
     .then((tracks) => {
       return res.status(200).json({ tracks });
     })
