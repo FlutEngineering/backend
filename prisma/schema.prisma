@@ -110,12 +110,12 @@ model TracksInPlaylists {
 }
 
 model Like {
-  id        Int      @id @default(autoincrement())
   user      User     @relation(fields: [userId], references: [address])
   userId    String   @db.VarChar(42)
   track     Track    @relation(fields: [trackId], references: [id])
   trackId   String   @db.Uuid
   createdAt DateTime @default(now())
 
-  @@unique([userId, trackId])
+  @@id([userId, trackId])
+  @@map("likes")
 }
