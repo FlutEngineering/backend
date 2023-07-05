@@ -85,6 +85,7 @@ router.get("/", isAuthorized, async (_req, res) => {
         address: true,
         followedBy: true,
         following: true,
+        likes: true,
       },
     })
     .then(collectFollows)
