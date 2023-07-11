@@ -17,7 +17,7 @@ router.get("/like/:id", isAuthorized, async (req, res) => {
       data: {
         user: {
           connect: {
-            address 
+            address,
           },
         },
         track: {
@@ -142,9 +142,8 @@ router.get("/unfollow/:address", isAddress, isAuthorized, async (req, res) => {
 });
 
 router.get("/", isAuthorized, async (_req, res) => {
-  
   const address = res.locals.address;
-  console.log('address',address)
+
   await prisma.user
     .findUniqueOrThrow({
       where: { address },
@@ -158,7 +157,6 @@ router.get("/", isAuthorized, async (_req, res) => {
     .then(collectFollows)
     .then(collectLikes)
     .then((artist) => {
-      console.log('👩‍🎨',artist)
       return res.status(200).json({ artist });
     })
     .catch((e) => {
