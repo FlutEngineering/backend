@@ -17,6 +17,10 @@ export const collectRelations =
       track
     );
 
+export const collectLikes = collectRelations([
+  { collect: "likes", by: "trackId" },
+]);
+
 export const collectTags = collectRelations([
   { collect: "tags", by: "tagName" },
 ]);
