@@ -26,6 +26,7 @@ model Track {
   updatedAt     DateTime            @updatedAt
   playEvents    PlayEvent[]
   playlists     TracksInPlaylists[]
+  likes         Like[]
 
   @@unique([artistAddress, title])
   @@unique([artistAddress, slug])
@@ -35,6 +36,7 @@ model Track {
 model User {
   address    String      @id @db.VarChar(42)
   tracks     Track[]
+  likes      Like[]
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
   followedBy Follows[]   @relation("following")
@@ -44,6 +46,7 @@ model User {
 
   @@map("users")
 }
+
 
 model Follows {
   follower    User     @relation("follower", fields: [followerId], references: [address])
@@ -104,4 +107,15 @@ model TracksInPlaylists {
 
   @@id([trackId, playlistId])
   @@map("playlists_tracks")
+}
+
+model Like {
+  user      User     @relation(fields: [userId], references: [address])
+  userId    String   @db.VarChar(42)
+  track     Track    @relation(fields: [trackId], references: [id])
+  trackId   String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  @@id([userId, trackId])
+  @@map("likes")
 }

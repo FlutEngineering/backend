@@ -59,7 +59,7 @@ router.get("/", async (req, res) => {
   const artist = Array.isArray(req.query.artist)
     ? req.query.artist.at(0)
     : req.query.artist;
-
+  
   await prisma.track
     .findMany({
       where: {
@@ -76,6 +76,7 @@ router.get("/", async (req, res) => {
         tags: true,
         createdAt: true,
         _count: { select: { playEvents: true } },
+       
       },
     })
     .then((tracks) => tracks.map(collectTags))
