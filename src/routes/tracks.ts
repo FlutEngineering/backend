@@ -5,6 +5,7 @@ import multer from "multer";
 import { json as jsonParser } from "body-parser";
 import slugify from "slugify";
 import * as ipfs from "~/services/ipfs";
+import { generateThumbnail } from "~/services/images";
 import { countRelations, collectTags } from "~/utils";
 import isAuthorized from "~/middlewares/isAuthorized";
 import isAddress from "~/middlewares/isAddress";
@@ -59,7 +60,7 @@ router.get("/", async (req, res) => {
   const artist = Array.isArray(req.query.artist)
     ? req.query.artist.at(0)
     : req.query.artist;
-  
+
   await prisma.track
     .findMany({
       where: {
@@ -76,7 +77,6 @@ router.get("/", async (req, res) => {
         tags: true,
         createdAt: true,
         _count: { select: { playEvents: true } },
-       
       },
     })
     .then((tracks) => tracks.map(collectTags))
@@ -236,7 +236,8 @@ router.post("/", isAuthorized, async (req, res) => {
       },
     })
     .then(collectTags)
-    .then((track) => {
+    .then(async (track) => {
+      await generateThumbnail(image.buffer, cids.image);
       return res.status(200).json(track);
     })
     .catch((e) => {

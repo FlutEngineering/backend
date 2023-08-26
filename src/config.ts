@@ -9,3 +9,4 @@ export const S3_API_KEY = config.parsed?.S3_API_KEY || "";
 export const S3_API_SECRET = config.parsed?.S3_API_SECRET || "";
 export const S3_BUCKET_NAME = config.parsed?.S3_BUCKET_NAME || "";
 export const COOKIE_PASSWORD = config.parsed?.COOKIE_PASSWORD || "";
+export const ASSETS_PATH = config.parsed?.ASSETS_PATH || "../flute-assets";
