@@ -35,6 +35,19 @@ export const countRelations =
   <T extends { _count: { [K in R]: number } }>({ _count, ...track }: T) =>
     R.assoc(as, _count[relationName], track);
 
+export const countPlayEvents = countRelations("playEvents", "playCount");
+export const countTracks = countRelations("tracks", "trackCount");
+
+export const timestampToNumber = <
+  T extends { createdAt: Date; updatedAt: Date }
+>(
+  track: T
+) => ({
+  ...track,
+  createdAt: +track.createdAt,
+  updatedAt: +track.updatedAt,
+});
+
 export function sha256(input: string | Buffer) {
   return createHash("sha256").update(input).digest("hex");
 }

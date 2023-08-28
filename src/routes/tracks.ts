@@ -1,4 +1,5 @@
 import path from "node:path";
+import * as R from "ramda";
 import { Prisma, PrismaClient } from "@prisma/client";
 import express from "express";
 import multer from "multer";
@@ -6,9 +7,10 @@ import { json as jsonParser } from "body-parser";
 import slugify from "slugify";
 import * as ipfs from "~/services/ipfs";
 import { generateThumbnail } from "~/services/images";
-import { countRelations, collectTags } from "~/utils";
+import { collectTags, timestampToNumber, countPlayEvents } from "~/utils";
 import isAuthorized from "~/middlewares/isAuthorized";
 import isAddress from "~/middlewares/isAddress";
+import { TRACK_FIELDS } from "~/config";
 
 const AUDIO_MIMETYPES = [
   "audio/aac",
@@ -67,20 +69,9 @@ router.get("/", async (req, res) => {
         tags: tag ? { some: { tag: { name: tag } } } : undefined,
         artistAddress: artist,
       },
-      select: {
-        id: true,
-        audio: true,
-        image: true,
-        title: true,
-        slug: true,
-        artistAddress: true,
-        tags: true,
-        createdAt: true,
-        _count: { select: { playEvents: true } },
-      },
+      select: TRACK_FIELDS,
     })
-    .then((tracks) => tracks.map(collectTags))
-    .then((tracks) => tracks.map(countRelations("playEvents", "playCount")))
+    .then(R.map(R.pipe(collectTags, countPlayEvents, timestampToNumber)))
     .then((tracks) => {
       return res.status(200).json({ tracks });
     })
@@ -103,19 +94,11 @@ router.get("/:address/:slug", isAddress, async (req, res) => {
       where: {
         artistAddress_slug: { artistAddress: address, slug },
       },
-      select: {
-        id: true,
-        audio: true,
-        image: true,
-        title: true,
-        slug: true,
-        artistAddress: true,
-        tags: true,
-        _count: { select: { playEvents: true } },
-      },
+      select: TRACK_FIELDS,
     })
     .then(collectTags)
-    .then(countRelations("playEvents", "playCount"))
+    .then(countPlayEvents)
+    .then(timestampToNumber)
     .then((track) => {
       return res.status(200).json({ track });
     })
@@ -227,15 +210,11 @@ router.post("/", isAuthorized, async (req, res) => {
           },
         },
       },
-      select: {
-        audio: true,
-        image: true,
-        title: true,
-        artistAddress: true,
-        tags: true,
-      },
+      select: TRACK_FIELDS,
     })
     .then(collectTags)
+    .then(countPlayEvents)
+    .then(timestampToNumber)
     .then(async (track) => {
       await generateThumbnail(image.buffer, cids.image);
       return res.status(200).json(track);
@@ -310,18 +289,11 @@ router.put("/:address/:slug", isAddress, isAuthorized, async (req, res) => {
                 }
               : undefined,
           },
-          select: {
-            audio: true,
-            image: true,
-            title: true,
-            slug: true,
-            artistAddress: true,
-            tags: true,
-            _count: { select: { playEvents: true } },
-          },
+          select: TRACK_FIELDS,
         })
         .then(collectTags)
-        .then(countRelations("playEvents", "playCount"));
+        .then(countPlayEvents)
+        .then(timestampToNumber);
 
       return res.status(200).json({ ok: true, track: updatedTrack });
     } catch (e: any) {
@@ -375,21 +347,14 @@ router.post("/playcount/:id", isAuthorized, async (req, res) => {
       },
       select: {
         track: {
-          select: {
-            audio: true,
-            image: true,
-            title: true,
-            slug: true,
-            artistAddress: true,
-            tags: true,
-            _count: { select: { playEvents: true } },
-          },
+          select: TRACK_FIELDS,
         },
       },
     })
     .then((event) => event.track)
     .then(collectTags)
-    .then(countRelations("playEvents", "playCount"))
+    .then(countPlayEvents)
+    .then(timestampToNumber)
     .then((track) => {
       return res.status(200).json({ ok: true, track });
     })

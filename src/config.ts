@@ -2,6 +2,19 @@ import * as dotenv from "dotenv";
 
 const config = dotenv.config();
 
+export const TRACK_FIELDS = {
+  id: true,
+  audio: true,
+  image: true,
+  title: true,
+  slug: true,
+  artistAddress: true,
+  tags: true,
+  createdAt: true,
+  updatedAt: true,
+  _count: { select: { playEvents: true } },
+};
+
 // TODO: add validation
 export const PORT = config.parsed?.PORT || 8001;
 export const S3_ENDPOINT_URL = config.parsed?.S3_ENDPOINT_URL || "";

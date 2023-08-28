@@ -3,8 +3,9 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import { json as jsonParser } from "body-parser";
 import slugify from "slugify";
 import isAddress from "~/middlewares/isAddress";
-import { collectTags, countRelations } from "~/utils";
+import { collectTags, countPlayEvents, timestampToNumber } from "~/utils";
 import isAuthorized from "~/middlewares/isAuthorized";
+import { TRACK_FIELDS } from "~/config";
 
 const prisma = new PrismaClient();
 
@@ -27,16 +28,7 @@ router.get("/:address", isAddress, async (req, res) => {
         tracks: {
           select: {
             track: {
-              select: {
-                id: true,
-                audio: true,
-                image: true,
-                title: true,
-                slug: true,
-                artistAddress: true,
-                tags: true,
-                _count: { select: { playEvents: true } },
-              },
+              select: TRACK_FIELDS,
             },
           },
         },
@@ -45,8 +37,8 @@ router.get("/:address", isAddress, async (req, res) => {
     .then((playlists) =>
       playlists.map((playlist) => ({
         ...playlist,
-        tracks: playlist.tracks.map((track) =>
-          collectTags(countRelations("playEvents", "playCount")(track.track))
+        tracks: playlist.tracks.map(({ track }) =>
+          collectTags(countPlayEvents(timestampToNumber(track)))
         ),
       }))
     )
@@ -79,16 +71,7 @@ router.get("/:address/:slug", isAddress, async (req, res) => {
         tracks: {
           select: {
             track: {
-              select: {
-                id: true,
-                audio: true,
-                image: true,
-                title: true,
-                slug: true,
-                artistAddress: true,
-                tags: true,
-                _count: { select: { playEvents: true } },
-              },
+              select: TRACK_FIELDS,
             },
           },
         },
@@ -96,8 +79,8 @@ router.get("/:address/:slug", isAddress, async (req, res) => {
     })
     .then((playlist) => ({
       ...playlist,
-      tracks: playlist.tracks.map((track) =>
-        collectTags(countRelations("playEvents", "playCount")(track.track))
+      tracks: playlist.tracks.map(({ track }) =>
+        collectTags(countPlayEvents(timestampToNumber(track)))
       ),
     }))
     .then((playlist) => {
@@ -200,16 +183,7 @@ router.post("/:address/:slug", isAuthorized, isAddress, async (req, res) => {
             tracks: {
               select: {
                 track: {
-                  select: {
-                    id: true,
-                    audio: true,
-                    image: true,
-                    title: true,
-                    slug: true,
-                    artistAddress: true,
-                    tags: true,
-                    _count: { select: { playEvents: true } },
-                  },
+                  select: TRACK_FIELDS,
                 },
               },
             },
@@ -220,8 +194,8 @@ router.post("/:address/:slug", isAuthorized, isAddress, async (req, res) => {
     .then((playlist) => playlist.playlist)
     .then((playlist) => ({
       ...playlist,
-      tracks: playlist.tracks.map((track) =>
-        collectTags(countRelations("playEvents", "playCount")(track.track))
+      tracks: playlist.tracks.map(({ track }) =>
+        collectTags(countPlayEvents(timestampToNumber(track)))
       ),
     }))
     .then((playlist) => {
