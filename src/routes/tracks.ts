@@ -327,7 +327,7 @@ router.delete("/:address/:slug", isAddress, isAuthorized, async (req, res) => {
     .catch((e) => {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         console.log(`Prisma Error ${e.code}: ${e.message}`);
-        return res.status(400).json({ error: "Track list request error" });
+        return res.status(400).json({ error: "Track deletion error" });
       } else {
         console.log(e);
         return res.status(400).json({ error: "Unknown Error" });

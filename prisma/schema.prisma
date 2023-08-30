@@ -110,9 +110,9 @@ model TracksInPlaylists {
 }
 
 model Like {
-  user      User     @relation(fields: [userId], references: [address])
+  user      User     @relation(fields: [userId], references: [address], onDelete: Cascade)
   userId    String   @db.VarChar(42)
-  track     Track    @relation(fields: [trackId], references: [id])
+  track     Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
   trackId   String   @db.Uuid
   createdAt DateTime @default(now())
 
