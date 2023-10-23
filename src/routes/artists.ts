@@ -45,6 +45,7 @@ router.get("/:address", isAddress, async (req, res) => {
         address: true,
         followedBy: true,
         following: true,
+        playlists: true,
       },
     })
     .then(collectFollows)

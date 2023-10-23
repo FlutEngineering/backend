@@ -152,8 +152,17 @@ router.get("/", isAuthorized, async (_req, res) => {
         followedBy: true,
         following: true,
         likes: true,
+        playlists: { include: { _count: { select: { tracks: true } } } },
       },
     })
+    .then((artist) => ({
+      ...artist,
+      playlists: artist.playlists.map((playlist) => ({
+        ...playlist,
+        _count: undefined,
+        trackCount: playlist._count.tracks,
+      })),
+    }))
     .then(collectFollows)
     .then(collectLikes)
     .then((artist) => {

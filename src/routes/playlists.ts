@@ -202,7 +202,9 @@ router.post("/:address/:slug", isAuthorized, isAddress, async (req, res) => {
       return res.status(200).json({ playlist });
     })
     .catch((e) => {
-      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+      if (e.code === "P2002") {
+        return res.status(400).json({ error: "Track already in the playlist" });
+      } else if (e instanceof Prisma.PrismaClientKnownRequestError) {
         console.log(`Prisma Error ${e.code}: ${e.message}`);
         return res.status(400).json({ error: "Playlist updating error" });
       } else {
