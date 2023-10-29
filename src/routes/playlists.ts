@@ -68,6 +68,7 @@ router.get("/:address/:slug", isAddress, async (req, res) => {
         id: true,
         title: true,
         slug: true,
+        userId: true,
         tracks: {
           select: {
             track: {
