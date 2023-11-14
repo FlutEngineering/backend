@@ -132,6 +132,80 @@ router.post("/:address", isAuthorized, isAddress, async (req, res) => {
     });
 });
 
+// Edit playlist
+router.put("/:address/:slug", isAuthorized, isAddress, async (req, res) => {
+  const { address, slug } = req.params;
+  const { title } = req.body;
+
+  if (address !== res.locals.address) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  // Validation
+  // ========================================
+  if (!title) {
+    return res.status(400).json({
+      error: "Invalid data",
+    });
+  }
+  // ========================================
+
+  const newSlug = slugify(title, { lower: true, strict: true });
+
+  await prisma.playlist
+    .update({
+      where: { userId_slug: { userId: address, slug } },
+      data: {
+        title,
+        slug: newSlug,
+      },
+      select: PLAYLIST_FIELDS,
+    })
+    .then((playlist) => ({
+      ...playlist,
+      createdAt: +playlist.createdAt,
+      updatedAt: +playlist.updatedAt,
+    }))
+    .then((playlist) => {
+      return res.status(200).json({ playlist });
+    })
+    .catch((e) => {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        console.log(`Prisma Error ${e.code}: ${e.message}`);
+        return res.status(400).json({ error: "Playlist creation error" });
+      } else {
+        console.log(e);
+        return res.status(400).json({ error: "Unknown Error" });
+      }
+    });
+});
+
+// Delete playlist
+router.delete("/:address/:slug", isAuthorized, isAddress, async (req, res) => {
+  const { address, slug } = req.params;
+
+  if (address !== res.locals.address) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  await prisma.playlist
+    .delete({
+      where: { userId_slug: { userId: address, slug } },
+    })
+    .then(() => {
+      return res.status(200).json({ ok: true });
+    })
+    .catch((e) => {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        console.log(`Prisma Error ${e.code}: ${e.message}`);
+        return res.status(400).json({ error: "Playlist deletion error" });
+      } else {
+        console.log(e);
+        return res.status(400).json({ error: "Unknown Error" });
+      }
+    });
+});
+
 // Add track to playlist
 router.post("/:address/:slug", isAuthorized, isAddress, async (req, res) => {
   const { address, slug } = req.params;
