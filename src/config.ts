@@ -15,6 +15,22 @@ export const TRACK_FIELDS = {
   _count: { select: { playEvents: true } },
 };
 
+export const PLAYLIST_FIELDS = {
+  id: true,
+  title: true,
+  slug: true,
+  userId: true,
+  createdAt: true,
+  updatedAt: true,
+  tracks: {
+    select: {
+      track: {
+        select: TRACK_FIELDS,
+      },
+    },
+  },
+};
+
 // TODO: add validation
 export const PORT = config.parsed?.PORT || 8001;
 export const S3_ENDPOINT_URL = config.parsed?.S3_ENDPOINT_URL || "";

@@ -47,7 +47,6 @@ model User {
   @@map("users")
 }
 
-
 model Follows {
   follower    User     @relation("follower", fields: [followerId], references: [address])
   followerId  String   @db.VarChar(42)
@@ -88,12 +87,14 @@ model PlayEvent {
 }
 
 model Playlist {
-  id     String              @id @default(dbgenerated("uuid_generate_v1mc()")) @db.Uuid
-  title  String              @db.VarChar(30)
-  slug   String
-  user   User                @relation(fields: [userId], references: [address], onDelete: Cascade)
-  userId String              @db.VarChar(42)
-  tracks TracksInPlaylists[]
+  id        String              @id @default(dbgenerated("uuid_generate_v1mc()")) @db.Uuid
+  title     String              @db.VarChar(30)
+  slug      String
+  user      User                @relation(fields: [userId], references: [address], onDelete: Cascade)
+  userId    String              @db.VarChar(42)
+  tracks    TracksInPlaylists[]
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @default(now()) @updatedAt
 
   @@unique([userId, slug])
   @@map("playlists")

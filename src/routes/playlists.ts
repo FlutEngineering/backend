@@ -5,10 +5,9 @@ import slugify from "slugify";
 import isAddress from "~/middlewares/isAddress";
 import { collectTags, countPlayEvents, timestampToNumber } from "~/utils";
 import isAuthorized from "~/middlewares/isAuthorized";
-import { TRACK_FIELDS } from "~/config";
+import { PLAYLIST_FIELDS } from "~/config";
 
 const prisma = new PrismaClient();
-
 const router = express.Router();
 
 router.use(jsonParser());
@@ -21,22 +20,13 @@ router.get("/:address", isAddress, async (req, res) => {
       where: {
         userId: address,
       },
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        tracks: {
-          select: {
-            track: {
-              select: TRACK_FIELDS,
-            },
-          },
-        },
-      },
+      select: PLAYLIST_FIELDS,
     })
     .then((playlists) =>
       playlists.map((playlist) => ({
         ...playlist,
+        createdAt: +playlist.createdAt,
+        updatedAt: +playlist.updatedAt,
         tracks: playlist.tracks.map(({ track }) =>
           collectTags(countPlayEvents(timestampToNumber(track)))
         ),
@@ -64,22 +54,12 @@ router.get("/:address/:slug", isAddress, async (req, res) => {
       where: {
         userId_slug: { userId: address, slug },
       },
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        userId: true,
-        tracks: {
-          select: {
-            track: {
-              select: TRACK_FIELDS,
-            },
-          },
-        },
-      },
+      select: PLAYLIST_FIELDS,
     })
     .then((playlist) => ({
       ...playlist,
+      createdAt: +playlist.createdAt,
+      updatedAt: +playlist.updatedAt,
       tracks: playlist.tracks.map(({ track }) =>
         collectTags(countPlayEvents(timestampToNumber(track)))
       ),
@@ -100,6 +80,7 @@ router.get("/:address/:slug", isAddress, async (req, res) => {
     });
 });
 
+// Create new playlist
 router.post("/:address", isAuthorized, isAddress, async (req, res) => {
   const { address } = req.params;
   const { title } = req.body;
@@ -127,13 +108,14 @@ router.post("/:address", isAuthorized, isAddress, async (req, res) => {
         slug,
       },
       select: {
-        id: true,
-        title: true,
-        slug: true,
+        ...PLAYLIST_FIELDS,
+        tracks: false,
       },
     })
     .then((playlist) => ({
       ...playlist,
+      createdAt: +playlist.createdAt,
+      updatedAt: +playlist.updatedAt,
       tracks: [],
     }))
     .then((playlist) => {
@@ -150,6 +132,7 @@ router.post("/:address", isAuthorized, isAddress, async (req, res) => {
     });
 });
 
+// Add track to playlist
 router.post("/:address/:slug", isAuthorized, isAddress, async (req, res) => {
   const { address, slug } = req.params;
   const { trackId } = req.body;
@@ -177,24 +160,15 @@ router.post("/:address/:slug", isAuthorized, isAddress, async (req, res) => {
       },
       select: {
         playlist: {
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-            tracks: {
-              select: {
-                track: {
-                  select: TRACK_FIELDS,
-                },
-              },
-            },
-          },
+          select: PLAYLIST_FIELDS,
         },
       },
     })
     .then((playlist) => playlist.playlist)
     .then((playlist) => ({
       ...playlist,
+      createdAt: +playlist.createdAt,
+      updatedAt: +playlist.updatedAt,
       tracks: playlist.tracks.map(({ track }) =>
         collectTags(countPlayEvents(timestampToNumber(track)))
       ),
