@@ -1,4 +1,5 @@
 import * as dotenv from "dotenv";
+import { isAddress } from "ethers/lib/utils";
 
 const config = dotenv.config();
 
@@ -39,3 +40,9 @@ export const S3_API_SECRET = config.parsed?.S3_API_SECRET || "";
 export const S3_BUCKET_NAME = config.parsed?.S3_BUCKET_NAME || "";
 export const COOKIE_PASSWORD = config.parsed?.COOKIE_PASSWORD || "";
 export const ASSETS_PATH = config.parsed?.ASSETS_PATH || "../flute-assets";
+export const ADMINS = (config.parsed?.ADMINS || "")
+  .replace(/\s/g, "")
+  .split(",")
+  .filter(isAddress);
+
+console.log("👾", "Admins:", ADMINS);

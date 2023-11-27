@@ -1,4 +1,5 @@
 import { RequestHandler } from "express";
+import { ADMINS } from "~/config";
 
 const isAuthorized: RequestHandler = (req, res, next) => {
   const address = req.session.siwe?.address;
@@ -9,6 +10,12 @@ const isAuthorized: RequestHandler = (req, res, next) => {
 
   // eslint-disable-next-line functional/immutable-data
   res.locals.address = address;
+
+  if (ADMINS.includes(address)) {
+    // eslint-disable-next-line functional/immutable-data
+    res.locals.isAdmin = true;
+  }
+
   next();
 };
 

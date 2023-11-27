@@ -155,9 +155,9 @@ router.get("/", isAuthorized, async (_req, res) => {
         playlists: { include: { _count: { select: { tracks: true } } } },
       },
     })
-    .then((artist) => ({
-      ...artist,
-      playlists: artist.playlists.map((playlist) => ({
+    .then((user) => ({
+      ...user,
+      playlists: user.playlists.map((playlist) => ({
         ...playlist,
         _count: undefined,
         trackCount: playlist._count.tracks,
@@ -165,8 +165,13 @@ router.get("/", isAuthorized, async (_req, res) => {
     }))
     .then(collectFollows)
     .then(collectLikes)
-    .then((artist) => {
-      return res.status(200).json({ artist });
+    .then((user) => {
+      return res.status(200).json({
+        user: {
+          ...user,
+          isAdmin: res.locals.isAdmin,
+        },
+      });
     })
     .catch((e) => {
       if (e.code === "P2025") {

@@ -313,7 +313,7 @@ router.put("/:address/:slug", isAddress, isAuthorized, async (req, res) => {
 router.delete("/:address/:slug", isAddress, isAuthorized, async (req, res) => {
   const { address, slug } = req.params;
 
-  if (address !== res.locals.address) {
+  if (address !== res.locals.address && !res.locals.isAdmin) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
